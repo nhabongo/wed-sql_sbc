@@ -576,54 +576,51 @@ sees a snapshot of the database taken right before it begins to run, which keeps
 data is shared between concurrent transactions. Another property of this model is that data read locks never conflicts with
 data write locks, minimizing lock contention.
 
-\par O padrão ISO/ANSI SQL define quatro níveis de isolamento transacional. Em ordem de restrição: \emph{
-Read Uncommited, Read Commited, Repeatable Read e Serializable}
+\par The ISO/ANSI SQL standard defines four levels for transaction isolation. In increasing order of restrictiveness are they: 
+\emph{Read Uncommitted, Read Committed, Repeatable Read e Serializable}
 
-\par No nível menos restritivo,\emph{Read Uncommited}, uma transação enxerga modificações realizadas por outras transações
-concorrentes que ainda não finalizaram. Esse fenômeno é conhecido como \emph{dirty read}. No PostgreSQL, transações que executam
-nesse nível de isolamento são na verdade executadas no nível \emph{Read Commited}, que é o nível mínimo de isolamento possível
-na arquitetura MVCC. De qualquer modo, o padrão permite que um SGBD execute suas transações em um nível mais restritivo
-de isolamento do que o requisitado.
+\par In the less strict level, \emph{Read Uncommitted}, a transaction can see modifications performed by others ongoing 
+concurrent transactions. This phenomena, know as \emph{dirty reads}, is nonetheless not allowed in PostgreSQL due to the
+MVCC architecture, and transactions that request this isolation level are effectively performed in the \emph{Read Committed}
+level. Anyway, the SQL standard permits a DBMS to to run a transaction in a stricter level than requested.
 
-\par Transações que executam no nível \emph{Read Commited} podem enxergar modificações realizadas por transações concorrentes
-que finalizem durante sua execução. Por exemplo, a leitura de uma mesma tupla duas ou mais vezes, dentro de uma mesma transação,
-pode retornar valores diferentes. Esse fenômeno é conhecido por \emph{nonrepeatable read}. Esse é o nível padrao do PostgreSQL.
+\par Transactions running in the \emph{Read Committed} level will view data committed by concurrent transaction, in the sense that
+two consecutive runs of a select statement may return a different set as a result, even though it is performed inside a 
+single transaction. This phenomena is know as \emph{nonrepeatable read}.
 
-\par Ao contrário do nível anterior, no nível \emph{Repetable Read}, uma transação ativa não enxerga tuplas modificadas
-por outras transações que finalizem previamente. Em caso de conflito, apenas uma transação finaliza e as outras são abortadas.
-Ainda assim, é possível ocorrer um fenômeno chamado de \emph{phantom read}, no qual um conjunto de tuplas que satisfaça uma
-determinada condição difere em duas execuções da mesma consulta na mesma transação. No PostgreSQL esse fenômeno não ocorre.
+\par Conversely, a transaction performing in the \emph{Repetable Read} level cannot view any results produced by concurrent
+transactions. In case of writing conflicts, only one transaction will be allowed to proceed and the others will be aborted.
+Nevertheless, the SQL standard predicts that a phenomena called \emph{phantom read}, in which a result set that matches some
+condition differs on two successive runs of the same statement, may occur in this level. This cannot happen in PostgreSQL tough.
 
-\par O último e mais restritivo nível de isolamento é o \emph{Serializable}. De acordo com o padrão, um conjunto de transações
-concorrentes executando nesse nível deve produzir o mesmo resultado da execução sequencial em alguma ordem. Sendo assim, nenhum
-dos fenômenos mencionados anteriormente ocorre. No PostgreSQL, esse nível de isolamento funciona exatamente como o \emph{Repeatable Read}
-a menos da introdução de um mecanismo para detectar anomalias que poderiam levar a um resultado não condizente com todas
-as possíveis execuções de um conjunto de transações em série.
+\par The last and more strict level is the \emph{Serializable}. According to the standard, a set o concurrent transaction
+running in this level must yield the same result as running then serially in some order. Due to this requirement, none of 
+the previously mentioned phenomena can occur. In PostgreSQL, this level behaves just like the \emph{Repeatable Read} apart
+of the introduction of a mechanism to detect non serializable executions orders. 
+ 
+\par Regarding the WED-server, the default transaction isolation level is the \emph{Read Committed}. Due to how its
+WED-state detection mechanism works, and also to the MVCC model, concurrent WED-transitions don't need to fully isolated 
+from each other, in addition, the order of their execution is never critical for a correctly designed WED-flow project. 
+For instance, if a WED-transition aborts after setting up a new WED-state, the possible fired new WED-transitions
+will never be seen by the WED-workers, and the database returns to the previous consistent state.  
 
-\par No WED-server, assim como no PostgreSQL, o nível padrão de isolamento transacional é o \emph{Read Commited}. Isso só
-é possível graças ao seu mecanismo de detecção de estados de dados que, valendo-se do modelo MVCC, gera uma nova versão das
-tabelas relevantes toda vez que uma transação modifica uma instância de um WED-flow. Sendo assim, no caso de duas transações 
-concorrentes, por exemplo, não é preciso que uma delas seja abortada, o que ocorreria em níveis mais restritos de isolamento.
-Caso uma transação aborte, o WED-server descarta as alterações realizadas. Transações que operam em instância distintas 
-são executadas totalmente em paralelo. Além disso, os WED-workers não exergarao as novas WED-transitions 
-disparadas até que transação que escreveu o novo estado de dados finalize com sucesso.
-
-\par WED-workers que trabalham simultaneamente na mesma instância executam em paralelo até o momento final, onde necessitam
-atualizar o estado de dados dessa instância. Nesse momento, a execução se dará de modo sequencial, uma vez que o PostreSQL
-irá conceder uma trava implicita para a tupla que será modificada. Vale notar que a atualização da instância deve ser a 
-ultima operação executada pelo WED-worker, limitando o tempo de espera à quantidade de transações pendentes multiplicada 
-pelo tempo de execução do comando SQL UPDATE. Caso contrário, a execução ocorre em paralelo (veja a figura~\ref{fig_wf}).
+\par Concerning the WED-workers, they are able to work in parallel on a same WED-flow instance until the final moment, when
+they need to update the WED-state. At this point, each transaction will be granted a lock to update this instance at a time,
+while the others must either wait or abort. During a normal operation of the WED-server,this last step of performing a WED-transition
+should be fast, therefore worthwhile for concurrent transactions to wait at least for some small amount of time before they
+eventually decide to abort. This waiting time to commit is bounded by the number of concurrent transactions waiting for 
+the lock multiplied by how long the WED-server takes to perform the update. Distinct WED-flow instances can be worked fully
+in parallel (See Figure ~\ref{fig_wf}).
    
 \begin{figure}[!t]
 \centering
 \includegraphics[width=2.5in]{wed-flow2.png}
-\caption{Os WED-workers 1 e 2 trabalham na mesma instância e precisam sincronizar a atualização do WED-state na tabela
-WED-flow}
+\caption{WED-workers one and two working on the same instance may need to synchronize their update at the WED\_flow table}
 \label{fig_wf}
 \end{figure}
 %escalabilidade (horizontal, vertical, consistencia transacional, pg_shard) 
 
-\section{Trabalhos Futuros}
+\section{Future Work}
 %pgBouncer = breaks notify
 %wasting connections
 %pubsub (rabbitMQ, real event bus)
@@ -631,51 +628,39 @@ WED-flow}
 %file descriptor per process
 %(linguagem, gerenciador de conecções, ...)
 
-Na próxima fase desse projeto serão incorporadas duas funcionalidades essenciais para o sucesso do projeto WED-SQL: uma
-linguagem declarativa para expressar as operações nativas do WED-flow e um módulo específico para gerenciar as conexões
-com o WED-server.
+The next phases of this work will be focused in two main tasks: Create a declarative language capable of natively express all
+the WED-flow's definitions and operations; Develop a connection manager module to reduce computer resources utilization
+by the WED-server when too many WED-workers are simultaneously in use.    
 
-\par Quanto à linguagem, a ideia é criar uma extensão da SQL (de codinome WSQL) que encapsule as operações nativas do WED-flow e integrá-la
-ao interpretador do PostgreSQL, o qual será então responsável por traduzir e executar código SQL nativo e outras operações que,
-nesse momento, são realizadas por meio de um conjunto de \emph{shell scripts}. Por meio dessa abstração, será possível 
-deixar a sintaxe declarativa do WED-server mais próxima do modelo teórico, simplificando sua utilização.
+Regarding the language, the idea is to extend the SQL language, defining new tokens and grammatical rules, and integrate it
+to the PostgreSQL parser. By approximating the syntax used on the WED-server to the mathematical definitions of the theoretical 
+model, we aim to make the implementation of a WED-flow project as smooth as possible. 
 
-\par Em Linux, um processo pode criar um clone de si mesmo para executar uma porção específica de código de modo independente.
-O PostgreSQL, assim como muitos outros serviços que atendem à requisições externas, utiliza essa técnica sempre que 
-for estabelecida uma nova conexão com uma aplicação cliente. Ao analisar a utilização de recursos do sistema operacional
-, é possível observar que cada novo sub-processo gerado ocupa cerca de 9MB de memória RAM. Como consequência, há um limite
-físico no número de conexões que podem ser estabelecidas simultaneamente. No caso do WED-SQL, cada WED-worker precisa 
-manter uma conexão ativa com o WED-server para receber as notificações
-assíncronas em tempo real, além de estabelecer uma segunda conexão para efetivamente executar a WED-transition. Sendo
-assim, para cada WED-worker ativo são criados dois sub-processos do PostgreSQL, o que acaba por consumir em média 18MB
-de RAM.
+PostgreSQL forks itself every time a new connection is established with a client application, creating a new system process.
+A analysis of the system resources utilization has show that each of these new process uses, on average, 9MB of RAM memory,
+what imposes a considerable limitation on the amount of simultaneous connections that the WED-server is capable of dealing with.
+Although a connection pool, in which connections are shared among non overlapping transactions, would
+suffice to circumvent this limitation, it cannot be employed with the \emph{Asynchronous Notifications} pattern, once a connection
+must be kept alive to ensure that messages don't get lost.
 
-\par As notificações assíncronas do PostgreSQL são baseadas em um modelo de comunicação conhecido por \emph{Publish-Subscribe},
-onde quem envia uma mensagem não esta ciente da existência de quem a recebe. Sendo assim, é possível utilizar uma especie
-de WED-worker específico que funcionaria com um detector de eventos em tempo real para receber e distribuir as mensagens
-para os demais WED-workers, o qual utilizaria uma única conexão com o WED-server, efetivamente dobrando a quantidade
-de WED-transitions simultâneas. Há diversas soluções prontas para implementar esse mecanismo, umas delas é o software 
-RabbitMQ.
+Since the asynchronous notifications are based on a \emph{Publish-Subscribe} approach, in which message senders are not
+aware of receivers, it is possible to implement some kind of a dedicated WED-worker to receive all notifications and wake
+the others when is appropriate. This could easily double the number of simultaneous WED-transitions that the WED-server
+can handle using the same amount of RAM memory, once each WED-worker currently needs two connections - one to receive notifications
+and another one to perform the WED-transition. There is also some third-party solutions like the RabbitMQ software.
 
 
-\section{Conclusão}
+\section{Final Conclusions}
 
-Desde sua concepção em 2010~\cite{FTPM10}, o paradigma WED-flow não parou de evoluir. Novos estudos, realizados antes
-e durante o desenvolvimento deste trabalho, mostram que embora a ferramenta WED-tool~\cite{WT} implemente o WED-flow, 
-na prática ela ja não atende aos novos requisitos dessas novas aplicações. 
+The WED-flow approach has been evolving since its first proposal back in 2010~\cite{FTPM10}. Previous and ongoing studies
+have raised new demands for a framework capable of support more advanced features present in modern WED-flow models, which
+are no longer meet by the only prototype tool available until now, the WED-tool~\cite{WT}. 
 
-\par A WED-SQL está sendo estrategicamente elaborada para suprir essa demanda. Sua integração ao SGBD garante que o controle
-de fluxo proposto pelo modelo seja executado com propriedades transacionais nativas, além de dispor do mais avançado aparato
-para o controle de concorrência assim como garantir a integridade dos dados com as propriedades ACID. A adoção do modelo 
-cliente servidor tem por objetivo viabilizar a sua implementação em ambientes distribuídos, uma vez que os WED-workers
-tipicamente serão implementados como \emph{Web Services} e múltiplos WED-servers poderão ser utilizados simultaneamente,
-seja para manter a disponibilidade, quanto para balanceamento de carga. Ao utilizar uma linguagem declarativa própria 
-para a WED-SQL, é possível aproximar sua sintaxe da utilizada no modelo teórico, simplificando sua utilização, e eventualmente
-lançar uma versão especial do PostgreSQL otimizada para o WED-flow.
-
-\par Resumindo, trata se de uma ferramenta moderna, altamente escalável, construída em um ambiente transacional cujo
-principal objetivo é simplificar a utilização e a implementação de modelos de processos de negócio desenvolvidos sob
-o paradigma WED-flow.
+The WED-SQL framework has meticulously been built to supply these demands. Its integration to a RDBMS ensures that a application's
+flux control is always performed under transactional rules and governed by ACID properties. By adopting a client-server
+architecture it was designed to run in a distributed environment and be scaled to support thousands of parallel transactions.
+In summary, WED-SQL is not only the most advanced WED-flow framework but it also aims spread the adoption of the WED-flow
+approach to design and implement business process models by providing an easy to use and reliable tool.  
 
 \section*{Acknowledgment}
 
