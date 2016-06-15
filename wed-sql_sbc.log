@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Arch Linux) (preloaded format=pdflatex 2015.11.17)  23 MAY 2016 15:58
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Arch Linux) (preloaded format=pdflatex 2015.11.17)  3 JUN 2016 10:48
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -536,59 +536,63 @@ LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <13> not available
 <ER.png, id=23, 646.415pt x 566.115pt>
 File: ER.png Graphic file (type png)
  <use ER.png>
-Package pdftex.def Info: ER.png used on input line 146.
+Package pdftex.def Info: ER.png used on input line 89.
 (pdftex.def)             Requested size: 180.67499pt x 158.22606pt.
-LaTeX Font Info:    Try loading font information for T1+phv on input line 147.
+LaTeX Font Info:    Try loading font information for T1+phv on input line 90.
 
 (/usr/share/texmf-dist/tex/latex/psnfss/t1phv.fd
 File: t1phv.fd 2001/06/04 scalable font definitions for T1/phv.
 )
 LaTeX Font Info:    Font shape `T1/phv/bx/n' in size <10> not available
-(Font)              Font shape `T1/phv/b/n' tried instead on input line 147.
-LaTeX Font Info:    Try loading font information for OMS+ptm on input line 159.
+(Font)              Font shape `T1/phv/b/n' tried instead on input line 90.
+LaTeX Font Info:    Try loading font information for OMS+ptm on input line 100.
 
 
 (/usr/share/texmf-dist/tex/latex/psnfss/omsptm.fd
 File: omsptm.fd 
 )
 LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <12> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 159.
- [4 <./ER.png>] [5] [6]
-[7] [8] [9] [10]
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 100.
+ [4 <./ER.png>] [5]
+
+LaTeX Warning: Reference `GT' on page 6 undefined on input line 181.
+
+[6] [7] [8] [9] [10] [11]
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
- [11]
-[12] [13] <wed-flow2.png, id=59, 572.1375pt x 582.175pt>
+ [12]
+[13] <wed-flow2.png, id=59, 572.1375pt x 582.175pt>
 File: wed-flow2.png Graphic file (type png)
  <use wed-flow2.png>
-Package pdftex.def Info: wed-flow2.png used on input line 619.
+Package pdftex.def Info: wed-flow2.png used on input line 456.
 (pdftex.def)             Requested size: 180.67499pt x 183.84802pt.
 
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [14 <./wed-flow2.png>] [15]
+[14 <./wed-flow2.png>] [15]
 No file wed-sql_sbc.bbl.
-[16] (./wed-sql_sbc.aux) ) 
+[16] (./wed-sql_sbc.aux)
+
+LaTeX Warning: There were undefined references.
+
+ ) 
 Here is how much of TeX's memory you used:
- 3735 strings out of 493054
- 49326 string characters out of 6140585
- 130770 words of memory out of 5000000
- 7172 multiletter control sequences out of 15000+600000
+ 3740 strings out of 493054
+ 49374 string characters out of 6140585
+ 130899 words of memory out of 5000000
+ 7177 multiletter control sequences out of 15000+600000
  41250 words of font info for 52 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 37i,8n,28p,1182b,548s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/share/texmf-dist/fonts/enc/dvips/base/8r.enc}</
-usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texm
-f-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texmf-dist/fonts/ty
-pe1/public/amsfonts/cm/cmr12.pfb></usr/share/texmf-dist/fonts/type1/public/amsf
-onts/cm/cmr8.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.p
-fb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/
-texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/share/texmf-dist/fonts/type
-1/urw/helvetic/uhvb8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmb8a.p
-fb></usr/share/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/share/texmf-d
-ist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texmf-dist/fonts/type1/urw/tim
-es/utmri8a.pfb>
-Output written on wed-sql_sbc.pdf (16 pages, 284473 bytes).
+ 37i,8n,28p,1026b,548s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/share/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texmf-dist/fon
+ts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texmf-dist/fonts/type1/publi
+c/amsfonts/cm/cmmi8.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/c
+mr12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/s
+hare/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf-dis
+t/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texmf-dist/fonts/type1/u
+rw/courier/ucrr8a.pfb></usr/share/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pf
+b></usr/share/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texmf-dis
+t/fonts/type1/urw/times/utmbi8a.pfb></usr/share/texmf-dist/fonts/type1/urw/time
+s/utmr8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on wed-sql_sbc.pdf (16 pages, 281215 bytes).
 PDF statistics:
  110 PDF objects out of 1000 (max. 8388607)
  75 compressed objects within 1 object stream
